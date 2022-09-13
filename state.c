@@ -48,7 +48,7 @@ game_state_t *create_default_state()
 	Since retval->data should be able to dynamically grow,
 	what do you need to do? */
 	state->num_rows = num_rows;
-	state->board = (char **) malloc(num_rows * sizeof(char *));
+	state->board = (char **)malloc(num_rows * sizeof(char *));
 	/* Check the data attribute of our vector to make sure we got memory */
 	if (state->board == NULL)
 	{
@@ -63,11 +63,11 @@ game_state_t *create_default_state()
 	}
 
 	state->num_snakes = 1;
-	state->snakes = (snake_t *)malloc(sizeof(snake_t));
+	state->snakes = (snake_t *)malloc(state->num_snakes * sizeof(snake_t));
 	/* Check the data attribute of our vector to make sure we got memory */
 	if (state->snakes == NULL)
 	{
-		free(state); // Why is this line necessary?
+		free(state);
 		allocation_failed();
 	}
 
@@ -80,6 +80,10 @@ game_state_t *create_default_state()
 	for (unsigned int r = 1; r < num_rows - 1; r++)
 	{
 		set_board_at(state, r, 0, '#');
+		for (unsigned int c = 1; c < num_cols - 1; c++)
+		{
+			set_board_at(state, r, c, ' ');
+		}
 		set_board_at(state, r, num_cols - 1, '#');
 	}
 
@@ -93,6 +97,15 @@ game_state_t *create_default_state()
 	set_board_at(state, 2, 9, '*');
 
 	// initialize one snake
+	// The tail is at row 2, column 2, and the head is at row 2, column 4.
+	snake_t snake;
+	snake.tail_row = 2, snake.tail_col = 2, snake.head_row = 2, snake.head_col = 4;
+	snake.live = true;
+	state->snakes[0] = snake;
+	// state = initialize_snakes(state);
+	set_board_at(state, 2, 2, 'd');
+	set_board_at(state, 2, 4, 'D');
+	set_board_at(state, 2, 3, '>');
 	state = initialize_snakes(state);
 	return state;
 }
@@ -101,11 +114,11 @@ game_state_t *create_default_state()
 void free_state(game_state_t *state)
 {
 	// TODO: Implement this function.
-	free(state);
-	for (int r = 0; r < state->num_rows; r++) 
+	for (int r = 0; r < state->num_rows; r++)
 		free(state->board[r]);
 	free(state->board);
 	free(state->snakes);
+	free(state);
 	return;
 }
 
@@ -297,9 +310,12 @@ static void find_head(game_state_t *state, unsigned int snum)
 	return;
 }
 
-/* Task 6.2 */
+/* Task 6.2
+	This function takes in a game board and
+	creates the array of snake_t structs.
+*/
 game_state_t *initialize_snakes(game_state_t *state)
 {
 	// TODO: Implement this function.
-	return NULL;
+	return state;
 }
