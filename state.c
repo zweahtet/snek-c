@@ -48,7 +48,7 @@ game_state_t *create_default_state()
 	Since retval->data should be able to dynamically grow,
 	what do you need to do? */
 	state->num_rows = num_rows;
-	state->board = malloc(sizeof(char **));
+	state->board = (char **) malloc(num_rows * sizeof(char *));
 	/* Check the data attribute of our vector to make sure we got memory */
 	if (state->board == NULL)
 	{
@@ -57,9 +57,9 @@ game_state_t *create_default_state()
 	}
 
 	// allocate memory for board
-	for (unsigned int r = 0; r < num_rows; r ++)
+	for (unsigned int r = 0; r < num_rows; r++)
 	{
-		state->board[r] = malloc((num_cols+1)*sizeof(char));
+		state->board[r] = malloc(num_cols * sizeof(char));
 	}
 
 	state->num_snakes = 1;
@@ -101,6 +101,11 @@ game_state_t *create_default_state()
 void free_state(game_state_t *state)
 {
 	// TODO: Implement this function.
+	free(state);
+	for (int r = 0; r < state->num_rows; r++) 
+		free(state->board[r]);
+	free(state->board);
+	free(state->snakes);
 	return;
 }
 
