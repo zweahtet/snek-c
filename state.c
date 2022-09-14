@@ -524,6 +524,39 @@ game_state_t *load_board(char *filename)
 static void find_head(game_state_t *state, unsigned int snum)
 {
 	// TODO: Implement this function.
+	snake_t snake = state->snakes[snum];
+	unsigned int curr_row = snake.tail_row;
+	unsigned int curr_col = snake.tail_col;
+	char ch = get_board_at(state, curr_row, curr_col);
+	while (!is_head(ch))
+	{
+		unsigned int next_row = get_next_row(curr_row, ch);
+		unsigned int next_col = get_next_col(curr_col, ch);
+		ch = get_board_at(state, next_row, next_col);
+		curr_row = next_row;
+		curr_col = next_col;
+	}
+	state->snakes[snum].head_row = curr_row;
+	state->snakes[snum].head_col = curr_col;
+	return;
+}
+
+/*
+Helper function: determine whether snake is alive or dead
+based on its head dir
+*/
+static void is_alive(game_state_t *state, unsigned int snum)
+{
+	snake_t snake = state->snakes[snum];
+	char head_dir = get_board_at(state, snake.head_row, snake.head_col);
+	if (head_dir == 'x')
+	{
+		state->snakes[snum].live = false;
+	}
+	else
+	{
+		state->snakes[snum].live = true;
+	}
 	return;
 }
 
@@ -534,5 +567,38 @@ static void find_head(game_state_t *state, unsigned int snum)
 game_state_t *initialize_snakes(game_state_t *state)
 {
 	// TODO: Implement this function.
+	// Each snake on the board is numbered depending
+	// on the position of its tail, in the order that
+	// the tails appear in the file (going from top-to-bottom,
+	// then left-to-right).
+	state->snakes = (snake_t *)malloc(sizeof(snake_t));
+	/* Check the data attribute of our vector to make sure we got memory */
+	if (state->snakes == NULL)
+	{
+		free(state->snakes);
+		allocation_failed();
+	}
+
+	unsigned int num_rows = state->num_rows;
+	unsigned int count = 0;
+	for (unsigned int r = 0; r < num_rows; r++)
+	{
+		char *rs = state->board[r];
+		for (unsigned int c = 0; c < strlen(rs); c++)
+		{
+			if (is_tail(rs[c]))
+			{
+				snake_t snake;
+				snake.tail_row = r;
+				snake.tail_col = c;
+				state->snakes[count] = snake;
+				find_head(state, count);
+				is_alive(state, count);
+				count += 1;
+				state->snakes = (snake_t *)realloc(state->snakes, (count + 1) * sizeof(snake_t));
+			}
+		}
+	}
+	state->num_snakes = count;
 	return state;
 }
