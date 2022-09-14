@@ -59,7 +59,7 @@ game_state_t *create_default_state()
 	// allocate memory for board
 	for (unsigned int r = 0; r < num_rows; r++)
 	{
-		state->board[r] = malloc(num_cols * sizeof(char));
+		state->board[r] = malloc((num_cols + 1) * sizeof(char));
 	}
 
 	state->num_snakes = 1;
@@ -76,6 +76,8 @@ game_state_t *create_default_state()
 	{
 		set_board_at(state, 0, c, '#');
 	}
+	// set null terminator for character strings
+	set_board_at(state, 0, num_cols, '\0');
 	// side walls
 	for (unsigned int r = 1; r < num_rows - 1; r++)
 	{
@@ -85,6 +87,8 @@ game_state_t *create_default_state()
 			set_board_at(state, r, c, ' ');
 		}
 		set_board_at(state, r, num_cols - 1, '#');
+		// set null terminator for character strings
+		set_board_at(state, r, num_cols, '\0');
 	}
 
 	// bottom wall
@@ -92,20 +96,23 @@ game_state_t *create_default_state()
 	{
 		set_board_at(state, num_rows - 1, c, '#');
 	}
+	// set null terminator for character strings
+	set_board_at(state, num_rows - 1, num_cols, '\0');
 
 	// fruit
 	set_board_at(state, 2, 9, '*');
 
 	// initialize one snake
 	// The tail is at row 2, column 2, and the head is at row 2, column 4.
+	// delete these lines once finished initialize_snakes
 	snake_t snake;
 	snake.tail_row = 2, snake.tail_col = 2, snake.head_row = 2, snake.head_col = 4;
 	snake.live = true;
 	state->snakes[0] = snake;
-	// state = initialize_snakes(state);
 	set_board_at(state, 2, 2, 'd');
 	set_board_at(state, 2, 4, 'D');
 	set_board_at(state, 2, 3, '>');
+	//
 	state = initialize_snakes(state);
 	return state;
 }
@@ -113,7 +120,6 @@ game_state_t *create_default_state()
 /* Task 2 */
 void free_state(game_state_t *state)
 {
-	// TODO: Implement this function.
 	for (int r = 0; r < state->num_rows; r++)
 		free(state->board[r]);
 	free(state->board);
@@ -122,10 +128,16 @@ void free_state(game_state_t *state)
 	return;
 }
 
-/* Task 3 */
+/* Task 3:
+This function print out the given game board to the given file pointer.
+*/
 void print_board(game_state_t *state, FILE *fp)
 {
-	// TODO: Implement this function.
+	// fp = fopen()
+	for (int r = 0; r < state->num_rows; r++)
+	{
+		fprintf(fp, "%s\n", state->board[r]);
+	}
 	return;
 }
 
@@ -168,7 +180,11 @@ static void set_board_at(game_state_t *state, unsigned int row, unsigned int col
 static bool is_tail(char c)
 {
 	// TODO: Implement this function.
-	return true;
+	if (c == 'w' || c == 'a' || c == 's' || c == 'd')
+	{
+		return true;
+	}
+	return false;
 }
 
 /*
@@ -179,7 +195,11 @@ static bool is_tail(char c)
 static bool is_head(char c)
 {
 	// TODO: Implement this function.
-	return true;
+	if (c == 'W' || c == 'A' || c == 'S' || c == 'D' || c == 'x')
+	{
+		return true;
+	}
+	return false;
 }
 
 /*
@@ -189,7 +209,11 @@ static bool is_head(char c)
 static bool is_snake(char c)
 {
 	// TODO: Implement this function.
-	return true;
+	if (is_head(c) || is_tail(c) || c == '^' || c == '<' || c == 'v' || c == '>')
+	{
+		return true;
+	}
+	return false;
 }
 
 /*
@@ -200,6 +224,22 @@ static bool is_snake(char c)
 static char body_to_tail(char c)
 {
 	// TODO: Implement this function.
+	if (c == '^')
+	{
+		return 'w';
+	}
+	else if (c == '<')
+	{
+		return 'a';
+	}
+	else if (c == 'v')
+	{
+		return 's';
+	}
+	else if (c == '>')
+	{
+		return 'd';
+	}
 	return '?';
 }
 
@@ -211,6 +251,22 @@ static char body_to_tail(char c)
 static char head_to_body(char c)
 {
 	// TODO: Implement this function.
+	if (c == 'W')
+	{
+		return '^';
+	}
+	else if (c == 'A')
+	{
+		return '<';
+	}
+	else if (c == 'S')
+	{
+		return 'v';
+	}
+	else if (c == 'D')
+	{
+		return '>';
+	}
 	return '?';
 }
 
@@ -222,6 +278,14 @@ static char head_to_body(char c)
 static unsigned int get_next_row(unsigned int cur_row, char c)
 {
 	// TODO: Implement this function.
+	if (c == 'v' || c == 's' || c == 'S')
+	{
+		return cur_row + 1;
+	}
+	else if (c == '^' || c == 'w' || c == 'W')
+	{
+		return cur_row - 1;
+	}
 	return cur_row;
 }
 
@@ -233,6 +297,14 @@ static unsigned int get_next_row(unsigned int cur_row, char c)
 static unsigned int get_next_col(unsigned int cur_col, char c)
 {
 	// TODO: Implement this function.
+	if (c == '>' || c == 'd' || c == 'D')
+	{
+		return cur_col + 1;
+	}
+	else if (c == '<' || c == 'a' || c == 'A')
+	{
+		return cur_col - 1;
+	}
 	return cur_col;
 }
 
@@ -246,7 +318,11 @@ static unsigned int get_next_col(unsigned int cur_col, char c)
 static char next_square(game_state_t *state, unsigned int snum)
 {
 	// TODO: Implement this function.
-	return '?';
+	snake_t snake = state->snakes[snum];
+	char head_dir = get_board_at(state, snake.head_row, snake.head_col);
+	unsigned int next_row = get_next_row(snake.head_row, head_dir);
+	unsigned int next_col = get_next_col(snake.head_col, head_dir);
+	return get_board_at(state, next_row, next_col);
 }
 
 /*
@@ -263,6 +339,14 @@ static char next_square(game_state_t *state, unsigned int snum)
 static void update_head(game_state_t *state, unsigned int snum)
 {
 	// TODO: Implement this function.
+	snake_t snake = state->snakes[snum];
+	char head_dir = get_board_at(state, snake.head_row, snake.head_col);
+	unsigned int next_row = get_next_row(snake.head_row, head_dir);
+	unsigned int next_col = get_next_col(snake.head_col, head_dir);
+	set_board_at(state, next_row, next_col, head_dir);
+	set_board_at(state, snake.head_row, snake.head_col, head_to_body(head_dir));
+	state->snakes[snum].head_row = next_row;
+	state->snakes[snum].head_col = next_col;
 	return;
 }
 
@@ -279,20 +363,66 @@ static void update_head(game_state_t *state, unsigned int snum)
 static void update_tail(game_state_t *state, unsigned int snum)
 {
 	// TODO: Implement this function.
+	snake_t snake = state->snakes[snum];
+	char tail_dir = get_board_at(state, snake.tail_row, snake.tail_col);
+	unsigned int next_row = get_next_row(snake.tail_row, tail_dir);
+	unsigned int next_col = get_next_col(snake.tail_col, tail_dir);
+	char body_dir = get_board_at(state, next_row, next_col);
+	set_board_at(state, next_row, next_col, body_to_tail(body_dir));
+	set_board_at(state, snake.tail_row, snake.tail_col, ' ');
+	state->snakes[snum].tail_row = next_row;
+	state->snakes[snum].tail_col = next_col;
 	return;
 }
 
-/* Task 4.5 */
+/* Task 4.5
+ This function should move the snakes one timestep
+ according to the rules of the game.
+*/
 void update_state(game_state_t *state, int (*add_food)(game_state_t *state))
 {
 	// TODO: Implement this function.
+
+	// Each snake moves one step in the direction of its head.
+	for (unsigned int i = 0; i < state->num_snakes && state->snakes[i].live; i++)
+	{
+		// If the head crashes into the body of a snake or a wall,
+		// the snake dies and stops moving. When a snake dies, the
+		// head is replaced with an x.
+		char next_dir = next_square(state, i);
+		if (next_dir == '#' || is_snake(next_dir))
+		{
+			state->snakes[i].live = false;
+			set_board_at(state, state->snakes[i].head_row, state->snakes[i].head_col, 'x');
+		}
+
+		// If the head moves into a fruit, the snake eats the fruit
+		// and grows by 1 unit in length. (You can implement growing
+		// by 1 unit by updating the head without updating the tail.)
+		// Each time fruit is consumed, a new fruit is generated on the board.
+		else if (next_dir == '*')
+		{
+			update_head(state, i);
+			// add more food for snakes
+			add_food(state);
+		}
+		else
+		{
+			update_head(state, i);
+			update_tail(state, i);
+		}
+	}
+
 	return;
 }
 
-/* Task 5 */
+/* Task 5
+This function will read a game board from a file into memory.
+*/
 game_state_t *load_board(char *filename)
 {
 	// TODO: Implement this function.
+	
 	return NULL;
 }
 
