@@ -422,8 +422,95 @@ This function will read a game board from a file into memory.
 game_state_t *load_board(char *filename)
 {
 	// TODO: Implement this function.
-	
-	return NULL;
+	FILE *fp;
+	char ch;
+
+	// open the file in read mode
+	fp = fopen(filename, "r");
+
+	if (fp == NULL)
+	{
+		printf("file can't be opened \n");
+		return NULL;
+	}
+
+	unsigned int num_rows, num_cols;
+	num_rows = 0, num_cols = 0;
+
+	unsigned int prev_row = 0;
+	// game state
+	game_state_t *state = (game_state_t *)malloc(sizeof(game_state_t));
+	/* Check our return value to make sure we got memory */
+	if (state == NULL)
+	{
+		free(state);
+		allocation_failed();
+	}
+
+	// /* Now we need to initialize our data.
+	// Since retval->data should be able to dynamically grow,
+	// what do you need to do? */
+	state->board = (char **)malloc(sizeof(char *));
+	state->board[num_rows] = malloc(sizeof(char));
+	/* Check the data attribute of our vector to make sure we got memory */
+	if (state->board == NULL || state->board[num_rows] == NULL)
+	{
+		free(state->board); // Why is this line necessary?
+		allocation_failed();
+	}
+
+	// character by character using loop.
+	char *str = malloc(sizeof(char *));
+	strcpy(str, "");
+	do
+	{
+		if (ch != '\n')
+		{
+			strncat(str, &ch, 1);
+			num_cols += 1;
+		}
+		else
+		{
+			state->board[num_rows] = malloc((num_cols + 1) * sizeof(char));
+			for (unsigned int c = 0; c < num_cols; c++)
+			{
+				set_board_at(state, num_rows, c, str[c]);
+			}
+			if (ch == '\n') // update # rows at the end of the line
+			{
+				// set_board_at(state, num_rows, num_cols, ch);
+				set_board_at(state, num_rows, num_cols, '\0');
+				num_rows += 1;
+				num_cols = 0; // after each line, reset # of cols
+				free(str);
+				str = malloc(sizeof(char *));
+			}
+		}
+
+		// allocate memory for board
+		if (prev_row < num_rows && ch != EOF)
+		{
+			state->board = (char **)realloc(state->board, (num_rows + 1) * sizeof(char *));
+			/* Check the data attribute of our vector to make sure we got memory */
+			if (state->board == NULL)
+			{
+				free_state(state); // Why is this line necessary?
+				allocation_failed();
+			}
+			prev_row = num_rows;
+			// state->board[num_rows] = malloc(sizeof(char));
+		}
+
+		// Checking if character is not EOF.
+		// If it is EOF stop eading.
+	} while ((ch = (char)fgetc(fp)) != EOF);
+
+	// initialize values
+	state->num_rows = num_rows;
+
+	fclose(fp);
+	free(str);
+	return state;
 }
 
 /*
