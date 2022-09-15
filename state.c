@@ -474,7 +474,6 @@ game_state_t *load_board(char *filename)
 			else
 			{
 				state->board[num_rows] = malloc((num_cols + 1) * sizeof(char));
-				// state->board[num_rows] = malloc((strlen(str) + 1) * sizeof(char));
 				for (unsigned int c = 0; c < num_cols; c++)
 				{
 					set_board_at(state, num_rows, c, str[c]);
@@ -485,8 +484,9 @@ game_state_t *load_board(char *filename)
 					set_board_at(state, num_rows, num_cols, '\0');
 					num_rows += 1;
 					num_cols = 0; // after each line, reset # of cols
-					free(str);
-					str = malloc(sizeof(char *));
+					// free(str);
+					// str = malloc(sizeof(char *));
+					strcpy(str, "");
 				}
 			}
 
@@ -501,18 +501,16 @@ game_state_t *load_board(char *filename)
 					allocation_failed();
 				}
 				prev_row = num_rows;
-				// state->board[num_rows] = malloc(sizeof(char));
 			}
 		}
 		// Checking if character is not EOF.
 		// If it is EOF stop eading.
 	} while (ch != EOF);
-
+	free(str);
 	// initialize values
 	state->num_rows = num_rows;
 
 	fclose(fp);
-	free(str);
 	return state;
 }
 

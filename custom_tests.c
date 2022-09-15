@@ -157,7 +157,8 @@ bool test_body_to_tail()
   // TODO: Implement this function.
   char testcase_1 = '^';
   char output_1 = body_to_tail(testcase_1);
-  if (!assert_equals_char("output_1", 'w', output_1)) {
+  if (!assert_equals_char("output_1", 'w', output_1))
+  {
     return false;
   }
   return true;
@@ -166,18 +167,38 @@ bool test_body_to_tail()
 bool test_head_to_body()
 {
   // TODO: Implement this function.
+  char testcase_1 = 'W';
+  char output_1 = head_to_body(testcase_1);
+  if (!assert_equals_char("output_1", '^', output_1))
+  {
+    return false;
+  }
   return true;
 }
 
 bool test_get_next_x()
 {
   // TODO: Implement this function.
+  unsigned int curr_col = 1;
+  char testcase_1 = '>';
+  unsigned int output_1 = get_next_col(curr_col, testcase_1);
+  if (!assert_equals_unsigned_int("output_1", 2, output_1))
+  {
+    return false;
+  }
   return true;
 }
 
 bool test_get_next_y()
 {
   // TODO: Implement this function.
+  unsigned int curr_row = 1;
+  char testcase_1 = 'v';
+  unsigned int output_1 = get_next_row(curr_row, testcase_1);
+  if (!assert_equals_unsigned_int("output_1", 2, output_1))
+  {
+    return false;
+  }
   return true;
 }
 
